@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Cake & Catering Setup Tracker (Firebase)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF4EC;
+    --paper-dim:#F1E7D8;
+    --ink:#2E2119;
+    --ink-soft:#6B5C4F;
+    --berry:#8B2E3F;
+    --berry-dark:#6E2331;
+    --berry-tint:#F4E0E2;
+    --gold:#C4922E;
+    --gold-tint:#F6E9D0;
+    --sage:#5C7A52;
+    --sage-tint:#E4EBDF;
+    --line:#E4D5C3;
+    --card:#FFFFFF;
+    --shadow: 0 3px 12px rgba(46,33,25,0.09);
+    --shadow-lg: 0 -8px 30px rgba(46,33,25,0.18);
+    --radius: 18px;
+    --radius-sm: 12px;
+    --font-display:'Fraunces','Noto Sans Ethiopic',serif;
+    --font-body:'Inter','Noto Sans Ethiopic',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--paper-dim);}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  body.lang-am{font-family:'Noto Sans Ethiopic','Inter',sans-serif;}
+  button,input,select{font-family:inherit;}
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    padding-bottom:110px;
+    box-shadow:0 0 40px rgba(0,0,0,0.06);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(160deg, var(--berry) 0%, var(--berry-dark) 100%);
+    color:#fff;
+    padding:18px 18px 22px;
+    border-radius:0 0 22px 22px;
+  }
+  .topbar-row{display:flex;justify-content:space-between;align-items:flex-start;}
+  .eyebrow{
+    font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    opacity:.75;font-weight:600;margin:0 0 2px;
+  }
+  .app-title{
+    font-family:var(--font-display);font-weight:600;font-size:21px;margin:0;line-height:1.15;
+  }
+  .lang-btn{
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.35);
+    color:#fff;border-radius:999px;padding:7px 14px;
+    font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;
+  }
+  .lang-btn:active{background:rgba(255,255,255,0.3);}
+  .total-block{margin-top:16px;}
+  .total-label{font-size:12.5px;opacity:.8;font-weight:500;margin:0 0 2px;}
+  .total-value{
+    font-family:var(--font-display);font-weight:700;font-size:36px;line-height:1.05;
+    letter-spacing:-0.01em;
+  }
+  .stat-chips{display:flex;gap:8px;margin-top:14px;}
+  .stat-chip{
+    flex:1;background:rgba(255,255,255,0.14);border-radius:12px;padding:9px 10px;
+  }
+  .stat-chip .lab{font-size:10.5px;opacity:.8;margin:0 0 2px;font-weight:600;}
+  .stat-chip .val{font-size:15px;font-weight:700;}
+  .stat-chip.sage-mark .val{color:#DDEBD5;}
+
+  /* ---------- Name banner ---------- */
+  .name-banner{
+    margin:14px 16px 0;background:var(--gold-tint);border:1px solid var(--gold);
+    border-radius:var(--radius-sm);padding:12px 14px;
+  }
+  .name-banner p{margin:0 0 8px;font-size:13.5px;font-weight:600;color:#5C4212;}
+  .name-banner .hint{font-weight:400;font-size:12px;color:#7A6432;display:block;margin-top:1px;}
+  .name-row{display:flex;gap:8px;}
+  .name-row input{
+    flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;background:#fff;
+  }
+  .name-row button{
+    background:var(--berry);color:#fff;border:none;border-radius:10px;padding:0 16px;font-weight:700;font-size:13px;cursor:pointer;
+  }
+  .you-line{padding:10px 16px 0;font-size:12.5px;color:var(--ink-soft);}
+  .you-line b{color:var(--ink);}
+  .you-line button{background:none;border:none;color:var(--berry);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline;}
+
+  /* ---------- Insights ---------- */
+  .section-title{
+    font-family:var(--font-display);font-size:15px;font-weight:600;
+    margin:20px 16px 10px;color:var(--ink);
+  }
+  .insight-row{display:flex;gap:10px;padding:0 16px;overflow-x:auto;scrollbar-width:none;}
+  .insight-row::-webkit-scrollbar{display:none;}
+  .insight-card{
+    flex:0 0 auto;min-width:130px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:11px 13px;box-shadow:var(--shadow);
+  }
+  .insight-card .lab{font-size:11px;color:var(--ink-soft);font-weight:600;margin:0 0 4px;}
+  .insight-card .val{font-size:14.5px;font-weight:700;font-family:var(--font-display);}
+
+  .next-buy{margin:14px 16px 0;}
+  .next-buy-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;
+  }
+  .next-buy-item:last-child{border-bottom:none;}
+  .next-buy-item .nm{font-weight:600;}
+  .next-buy-item .pr{color:var(--berry);font-weight:700;font-family:var(--font-display);}
+
+  /* ---------- Filter chips ---------- */
+  .filter-row{display:flex;gap:8px;padding:16px 16px 4px;}
+  .filter-chip{
+    padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+    font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+  }
+  .filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  /* ---------- Item list ---------- */
+  .list{padding:10px 16px 4px;}
+  .item-card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:14px 15px;margin-bottom:11px;position:relative;
+  }
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .item-name{font-weight:700;font-size:15px;line-height:1.3;margin:0;}
+  .item-cat{
+    display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-soft);
+    margin-top:3px;font-weight:500;
+  }
+  .badge{
+    font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0;
+    cursor:pointer;border:none;
+  }
+  .badge.planned{background:var(--gold-tint);color:#8A6417;}
+  .badge.purchased{background:var(--sage-tint);color:#3E5837;}
+  .item-bottom{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px dashed var(--line);margin-top:10px;padding-top:9px;
+  }
+  .item-price{font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--berry);}
+  .item-qty{font-size:12px;color:var(--ink-soft);font-weight:500;}
+  .item-meta{font-size:11.5px;color:var(--ink-soft);}
+  .item-actions{display:flex;align-items:center;gap:10px;}
+  .del-btn{
+    background:none;border:none;color:#B23A2E;font-size:12px;font-weight:700;cursor:pointer;padding:2px 0;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty{text-align:center;padding:50px 30px;}
+  .empty .emo{font-size:44px;margin-bottom:10px;}
+  .empty h3{font-family:var(--font-display);font-size:17px;margin:0 0 6px;}
+  .empty p{font-size:13.5px;color:var(--ink-soft);margin:0 0 18px;line-height:1.5;}
+  .empty button{
+    background:var(--berry);color:#fff;border:none;border-radius:12px;padding:11px 20px;
+    font-weight:700;font-size:13.5px;cursor:pointer;
+  }
+
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed;left:50%;bottom:22px;transform:translateX(calc(-50% + 168px));
+    background:var(--berry);color:#fff;border:none;border-radius:999px;
+    width:58px;height:58px;font-size:26px;box-shadow:0 6px 18px rgba(139,46,63,0.45);
+    cursor:pointer;z-index:25;display:flex;align-items:center;justify-content:center;
+  }
+  .fab:active{background:var(--berry-dark);}
+
+  /* ---------- Modal / bottom sheet ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(46,33,25,0.45);z-index:40;
+    display:none;
+  }
+  .overlay.show{display:block;}
+  .sheet{
+    position:fixed;left:50%;bottom:0;transform:translateX(-50%);
+    width:100%;max-width:480px;background:var(--paper);
+    border-radius:22px 22px 0 0;box-shadow:var(--shadow-lg);
+    z-index:41;padding:10px 18px 22px;
+    max-height:88vh;overflow-y:auto;
+    display:none;
+  }
+  .sheet.show{display:block;}
+  .sheet-handle{width:40px;height:4px;background:var(--line);border-radius:99px;margin:6px auto 14px;}
+  .sheet h2{font-family:var(--font-display);font-size:19px;margin:0 0 16px;}
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .field input{
+    width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font-size:15px;background:#fff;
+  }
+  .field input:focus{outline:2px solid var(--berry);outline-offset:1px;}
+  .two-col{display:flex;gap:10px;}
+  .two-col .field{flex:1;}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .cat-chip{
+    padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;
+    font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;
+  }
+  .cat-chip.selected{background:var(--berry);border-color:var(--berry);color:#fff;}
+  .status-toggle{display:flex;gap:8px;}
+  .status-btn{
+    flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:#fff;
+    font-weight:700;font-size:13.5px;cursor:pointer;color:var(--ink-soft);
+  }
+  .status-btn.selected.planned-sel{background:var(--gold-tint);border-color:var(--gold);color:#8A6417;}
+  .status-btn.selected.purchased-sel{background:var(--sage-tint);border-color:var(--sage);color:#3E5837;}
+  .sheet-actions{display:flex;gap:10px;margin-top:6px;}
+  .sheet-actions button{
+    flex:1;padding:13px;border-radius:12px;font-weight:700;font-size:14.5px;cursor:pointer;border:none;
+  }
+  .btn-cancel{background:var(--paper-dim);color:var(--ink-soft);}
+  .btn-save{background:var(--berry);color:#fff;}
+  .btn-save:disabled{opacity:.45;}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;
+    z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:380px){
+    .total-value{font-size:31px;}
+    .fab{transform:translateX(calc(-50% + 145px));}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* =========================================================================
+   FIREBASE SETUP — paste your config from Firebase Console below.
+   Project settings (gear icon) > scroll to "Your apps" > Web app config.
+   ========================================================================= */
+const firebaseConfig = {
+  piKey: "AIzaSyBTXAaN8s8sFJTVPDePstqQrsIJGapSfD4",
+  authDomain: "cake-catering-tracker.firebaseapp.com",
+  projectId: "cake-catering-tracker",
+  storageBucket: "cake-catering-tracker.firebasestorage.app",
+  messagingSenderId: "291441887174",
+  appId: "1:291441887174:web:25770932a3231f9a7314c7"
+};
+/* ========================================================================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const CONFIG_MISSING = firebaseConfig.apiKey === "YOUR_API_KEY";
+let db, itemsCol;
+if (!CONFIG_MISSING) {
+  const fbApp = initializeApp(firebaseConfig);
+  db = getFirestore(fbApp);
+  itemsCol = collection(db, "items");
+}
+
+/* ================= Data / translations ================= */
+const CATEGORIES = [
+  {id:'equipment',  en:'Equipment',   am:'መሳሪያዎች',    icon:'🧊'},
+  {id:'renovation', en:'Renovation',  am:'የቤት እድሳት',  icon:'🔨'},
+  {id:'ingredients',en:'Ingredients', am:'ግብዓቶች',     icon:'🧁'},
+  {id:'packaging',  en:'Packaging',   am:'መጠቅለያ',    icon:'📦'},
+  {id:'furniture',  en:'Furniture',   am:'የቤት እቃ',    icon:'🪑'},
+  {id:'other',      en:'Other',       am:'ሌላ',        icon:'🗂️'},
+];
+
+const TXT = {
+  en:{
+    appTitle:'Cake & Catering Setup', appSubtitle:'Startup expense tracker',
+    totalNeeded:'Total needed', purchased:'Purchased', remaining:'Remaining',
+    items:'items', addItem:'Add item', itemName:'Item name',
+    itemNamePlaceholder:'e.g. Refrigerator, flour, mixer...',
+    category:'Category', price:'Price (ETB)', quantity:'Quantity', status:'Status',
+    planned:'Planned', purchasedStatus:'Purchased', addedBy:'Added by',
+    addedByPlaceholder:'Your name', save:'Save item', cancel:'Cancel', delete:'Delete',
+    deleteConfirm:'Delete this item?', emptyTitle:'No items yet',
+    emptyBody:'Add the first thing you need to buy for the shop.',
+    addFirstItem:'Add your first item', all:'All',
+    insights:'Quick insights', topCategory:'Top spending category',
+    avgCost:'Average item cost', percentDone:'of budget purchased',
+    nextToBuy:'Biggest items still needed', nothingLeft:"You've bought everything on the list 🎉",
+    whoAdded:'by', welcomeQuestion:"What's your name?", welcomeHint:'So we know who added what',
+    changeLanguage:'አማ', addedToast:'Item added', deletedToast:'Item deleted',
+    change:'change', hi:'Hi',
+    configMissingTitle:'Firebase not connected yet',
+    configMissingBody:'Open this file and paste your firebaseConfig near the top of the script, then reload.'
+  },
+  am:{
+    appTitle:'የኬክና ኬተሪንግ ጅምር', appSubtitle:'የመነሻ ወጪ መከታተያ',
+    totalNeeded:'አጠቃላይ የሚያስፈልግ', purchased:'የተገዛ', remaining:'የቀረ',
+    items:'እቃዎች', addItem:'እቃ ጨምር', itemName:'የእቃው ስም',
+    itemNamePlaceholder:'ለምሳሌ፦ ማቀዝቀዣ, ዱቄት, ማደባለቂያ...',
+    category:'ምድብ', price:'ዋጋ (ብር)', quantity:'ብዛት', status:'ሁኔታ',
+    planned:'ታቅዷል', purchasedStatus:'ተገዝቷል', addedBy:'ያከለው/ችው',
+    addedByPlaceholder:'ስምዎ', save:'እቃ አስቀምጥ', cancel:'ይቅር', delete:'ሰርዝ',
+    deleteConfirm:'ይህን እቃ መሰረዝ ይፈልጋሉ?', emptyTitle:'እስካሁን እቃ የለም',
+    emptyBody:'ለሱቁ ማግኘት የሚያስፈልግዎትን የመጀመሪያ እቃ ይጨምሩ።',
+    addFirstItem:'የመጀመሪያ እቃ ጨምር', all:'ሁሉም',
+    insights:'ጠቃሚ መረጃ', topCategory:'በጣም ወጪ የበዛበት ምድብ',
+    avgCost:'አማካይ የእቃ ዋጋ', percentDone:'ከበጀቱ ተገዝቷል',
+    nextToBuy:'አሁንም የሚያስፈልጉ ትልልቅ እቃዎች', nothingLeft:'በዝርዝሩ ያለውን ሁሉ ገዝተዋል 🎉',
+    whoAdded:'በ', welcomeQuestion:'ስምዎ ማን ይባላል?', welcomeHint:'ማን እንዳከለ እንድናውቅ',
+    changeLanguage:'EN', addedToast:'እቃ ታክሏል', deletedToast:'እቃ ተሰርዟል',
+    change:'ቀይር', hi:'ሰላም',
+    configMissingTitle:'Firebase ገና አልተገናኘም',
+    configMissingBody:'ይህን ፋይል ከፍተው firebaseConfig ወደ ስክሪፕቱ አናት ይለጥፉ፣ ከዚያ ገጹን ያድሱ።'
+  }
+};
+
+/* ================= State ================= */
+let items = [];
+let settings = {name:'', language:'en'};
+let filter = 'all';
+let showNameEdit = false;
+let modalCategory = 'equipment';
+let modalStatus = 'planned';
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem('cake_catering_settings');
+    settings = raw ? JSON.parse(raw) : {name:'', language:'en'};
+  }catch(e){ settings = {name:'', language:'en'}; }
+}
+function saveSettingsLocal(){
+  try{ localStorage.setItem('cake_catering_settings', JSON.stringify(settings)); }catch(e){}
+}
+
+function t(key){ return (TXT[settings.language] && TXT[settings.language][key]) || TXT.en[key] || key; }
+function catLabel(cat){ return settings.language==='am' ? cat.am : cat.en; }
+function esc(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function money(n){
+  const rounded = Math.round(n);
+  const formatted = rounded.toLocaleString('en-US');
+  return settings.language==='am' ? `${formatted} ብር` : `${formatted} ETB`;
+}
+
+/* ================= Toast ================= */
+let toastTimer;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 1800);
+}
+
+/* ================= Computations ================= */
+function computeStats(){
+  const totalNeeded = items.reduce((s,i)=> s + (Number(i.price)*Number(i.qty)), 0);
+  const totalPurchased = items.filter(i=>i.status==='purchased').reduce((s,i)=> s + (Number(i.price)*Number(i.qty)), 0);
+  const remaining = totalNeeded - totalPurchased;
+  const percent = totalNeeded > 0 ? Math.round((totalPurchased/totalNeeded)*100) : 0;
+  const catTotals = {};
+  items.forEach(i=>{
+    const tot = Number(i.price)*Number(i.qty);
+    catTotals[i.category] = (catTotals[i.category]||0) + tot;
+  });
+  let topCat = null, topCatVal = 0;
+  Object.keys(catTotals).forEach(c=>{ if(catTotals[c] > topCatVal){ topCatVal = catTotals[c]; topCat = c; } });
+  const avg = items.length > 0 ? totalNeeded/items.length : 0;
+  const nextToBuy = items.filter(i=>i.status==='planned')
+    .sort((a,b)=> (Number(b.price)*Number(b.qty)) - (Number(a.price)*Number(a.qty)))
+    .slice(0,4);
+  return {totalNeeded, totalPurchased, remaining, percent, topCat, topCatVal, avg, nextToBuy};
+}
+
+/* ================= Render ================= */
+function render(){
+  const app = document.getElementById('app');
+
+  if(CONFIG_MISSING){
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="topbar-row">
+          <div>
+            <p class="eyebrow">🎂 ${esc(t('appSubtitle'))}</p>
+            <p class="app-title">${esc(t('appTitle'))}</p>
+          </div>
+        </div>
+      </div>
+      <div class="name-banner" style="margin:16px;">
+        <p>⚠️ ${esc(t('configMissingTitle'))}</p>
+        <p style="font-weight:400;font-size:13px;color:#7A6432;margin:0;">${esc(t('configMissingBody'))}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const s = computeStats();
+  const topCatObj = CATEGORIES.find(c=>c.id===s.topCat);
+
+  let html = '';
+
+  html += `
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <p class="eyebrow">🎂 ${esc(t('appSubtitle'))}</p>
+          <p class="app-title">${esc(t('appTitle'))}</p>
+        </div>
+        <button class="lang-btn" onclick="toggleLanguage()">${esc(t('changeLanguage'))}</button>
+      </div>
+      <div class="total-block">
+        <p class="total-label">${esc(t('totalNeeded'))}</p>
+        <div class="total-value">${money(s.totalNeeded)}</div>
+      </div>
+      <div class="stat-chips">
+        <div class="stat-chip sage-mark"><p class="lab">${esc(t('purchased'))}</p><p class="val">${money(s.totalPurchased)}</p></div>
+        <div class="stat-chip"><p class="lab">${esc(t('remaining'))}</p><p class="val">${money(s.remaining)}</p></div>
+        <div class="stat-chip"><p class="lab">${items.length} ${esc(t('items'))}</p><p class="val">${s.percent}%</p></div>
+      </div>
+    </div>
+  `;
+
+  if(!settings.name && !showNameEdit){ showNameEdit = true; }
+  if(showNameEdit){
+    html += `
+      <div class="name-banner">
+        <p>${esc(t('welcomeQuestion'))}<span class="hint">${esc(t('welcomeHint'))}</span></p>
+        <div class="name-row">
+          <input id="nameInput" type="text" placeholder="${esc(t('addedByPlaceholder'))}" value="${esc(settings.name||'')}">
+          <button onclick="saveName()">${esc(t('save'))}</button>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="you-line">${esc(t('hi'))}, <b>${esc(settings.name)}</b> · <button onclick="editName()">${esc(t('change'))}</button></div>
+    `;
+  }
+
+  if(items.length > 0){
+    html += `<div class="section-title">✨ ${esc(t('insights'))}</div>`;
+    html += `<div class="insight-row">`;
+    if(topCatObj){
+      html += `<div class="insight-card"><p class="lab">${esc(t('topCategory'))}</p><p class="val">${topCatObj.icon} ${esc(catLabel(topCatObj))}</p></div>`;
+    }
+    html += `<div class="insight-card"><p class="lab">${esc(t('avgCost'))}</p><p class="val">${money(s.avg)}</p></div>`;
+    html += `<div class="insight-card"><p class="lab">${s.percent}% ${esc(t('percentDone'))}</p><p class="val">${money(s.totalPurchased)}</p></div>`;
+    html += `</div>`;
+
+    html += `<div class="section-title">🧾 ${esc(t('nextToBuy'))}</div>`;
+    html += `<div class="next-buy">`;
+    if(s.nextToBuy.length === 0){
+      html += `<p style="padding:0 0 4px;font-size:13.5px;color:var(--ink-soft);">${esc(t('nothingLeft'))}</p>`;
+    } else {
+      s.nextToBuy.forEach(i=>{
+        html += `<div class="next-buy-item"><span class="nm">${esc(i.name)}</span><span class="pr">${money(Number(i.price)*Number(i.qty))}</span></div>`;
+      });
+    }
+    html += `</div>`;
+  }
+
+  html += `
+    <div class="filter-row">
+      <div class="filter-chip ${filter==='all'?'active':''}" onclick="setFilter('all')">${esc(t('all'))}</div>
+      <div class="filter-chip ${filter==='planned'?'active':''}" onclick="setFilter('planned')">${esc(t('planned'))}</div>
+      <div class="filter-chip ${filter==='purchased'?'active':''}" onclick="setFilter('purchased')">${esc(t('purchasedStatus'))}</div>
+    </div>
+  `;
+
+  const filtered = items.filter(i => filter==='all' ? true : i.status===filter);
+  if(items.length === 0){
+    html += `
+      <div class="empty">
+        <div class="emo">🧾</div>
+        <h3>${esc(t('emptyTitle'))}</h3>
+        <p>${esc(t('emptyBody'))}</p>
+        <button onclick="openSheet()">${esc(t('addFirstItem'))}</button>
+      </div>
+    `;
+  } else {
+    html += `<div class="list">`;
+    filtered.forEach(i=>{
+      const cat = CATEGORIES.find(c=>c.id===i.category) || CATEGORIES[CATEGORIES.length-1];
+      const total = Number(i.price)*Number(i.qty);
+      html += `
+        <div class="item-card">
+          <div class="item-top">
+            <div>
+              <p class="item-name">${esc(i.name)}</p>
+              <span class="item-cat">${cat.icon} ${esc(catLabel(cat))}</span>
+            </div>
+            <button class="badge ${i.status}" onclick="toggleStatus('${i.id}')">${i.status==='purchased' ? '✓ '+esc(t('purchasedStatus')) : esc(t('planned'))}</button>
+          </div>
+          <div class="item-bottom">
+            <div>
+              <span class="item-price">${money(total)}</span>
+              ${Number(i.qty) > 1 ? `<span class="item-qty"> · ${i.qty} × ${money(i.price)}</span>` : ''}
+              <div class="item-meta">${i.addedBy ? esc(t('whoAdded'))+' '+esc(i.addedBy) : ''}</div>
+            </div>
+            <div class="item-actions">
+              <button class="del-btn" onclick="deleteItem('${i.id}')">${esc(t('delete'))}</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  app.innerHTML = html;
+
+  let fab = document.getElementById('fabBtn');
+  if(!fab){
+    fab = document.createElement('button');
+    fab.id = 'fabBtn';
+    fab.className = 'fab';
+    fab.innerHTML = '+';
+    fab.onclick = openSheet;
+    document.body.appendChild(fab);
+  }
+}
+
+/* ================= Actions ================= */
+function toggleLanguage(){
+  settings.language = settings.language === 'en' ? 'am' : 'en';
+  document.body.className = settings.language==='am' ? 'lang-am' : '';
+  saveSettingsLocal();
+  render();
+}
+window.toggleLanguage = toggleLanguage;
+
+function editName(){ showNameEdit = true; render(); setTimeout(()=>{ const el=document.getElementById('nameInput'); if(el) el.focus(); },0); }
+window.editName = editName;
+
+function saveName(){
+  const val = document.getElementById('nameInput').value.trim();
+  settings.name = val;
+  showNameEdit = false;
+  saveSettingsLocal();
+  render();
+}
+window.saveName = saveName;
+
+function setFilter(f){ filter = f; render(); }
+window.setFilter = setFilter;
+
+async function toggleStatus(id){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  const newStatus = item.status === 'purchased' ? 'planned' : 'purchased';
+  try{ await updateDoc(doc(db, 'items', id), {status: newStatus}); }
+  catch(e){ console.error(e); showToast(settings.language==='am' ? 'ማዘመን አልተሳካም' : 'Update failed'); }
+}
+window.toggleStatus = toggleStatus;
+
+async function deleteItem(id){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  if(!confirm(t('deleteConfirm') + '\n' + item.name)) return;
+  try{
+    await deleteDoc(doc(db, 'items', id));
+    showToast(t('deletedToast'));
+  }catch(e){ console.error(e); showToast(settings.language==='am' ? 'መሰረዝ አልተሳካም' : 'Delete failed'); }
+}
+window.deleteItem = deleteItem;
+
+/* ================= Add-item sheet ================= */
+function openSheet(){
+  modalCategory = 'equipment';
+  modalStatus = 'planned';
+  const overlay = document.getElementById('overlay');
+  const sheet = document.getElementById('sheet');
+
+  let catChips = CATEGORIES.map(c=>`
+    <div class="cat-chip ${c.id===modalCategory?'selected':''}" data-cat="${c.id}" onclick="selectCategory('${c.id}')">${c.icon} ${esc(catLabel(c))}</div>
+  `).join('');
+
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <h2>➕ ${esc(t('addItem'))}</h2>
+    <div class="field">
+      <label>${esc(t('itemName'))}</label>
+      <input id="fName" type="text" placeholder="${esc(t('itemNamePlaceholder'))}" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>${esc(t('category'))}</label>
+      <div class="chip-row" id="catChipRow">${catChips}</div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>${esc(t('price'))}</label>
+        <input id="fPrice" type="number" inputmode="decimal" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label>${esc(t('quantity'))}</label>
+        <input id="fQty" type="number" inputmode="numeric" min="1" value="1">
+      </div>
+    </div>
+    <div class="field">
+      <label>${esc(t('status'))}</label>
+      <div class="status-toggle" id="statusToggle">
+        <button type="button" class="status-btn selected planned-sel" data-st="planned" onclick="selectStatus('planned')">${esc(t('planned'))}</button>
+        <button type="button" class="status-btn" data-st="purchased" onclick="selectStatus('purchased')">✓ ${esc(t('purchasedStatus'))}</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>${esc(t('addedBy'))}</label>
+      <input id="fAddedBy" type="text" placeholder="${esc(t('addedByPlaceholder'))}" value="${esc(settings.name||'')}">
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeSheet()">${esc(t('cancel'))}</button>
+      <button class="btn-save" onclick="submitItem()">${esc(t('save'))}</button>
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  sheet.classList.add('show');
+  overlay.onclick = closeSheet;
+  setTimeout(()=>{ const el = document.getElementById('fName'); if(el) el.focus(); }, 150);
+}
+window.openSheet = openSheet;
+
+function selectCategory(id){
+  modalCategory = id;
+  document.querySelectorAll('#catChipRow .cat-chip').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('data-cat')===id);
+  });
+}
+window.selectCategory = selectCategory;
+
+function selectStatus(st){
+  modalStatus = st;
+  document.querySelectorAll('#statusToggle .status-btn').forEach(el=>{
+    const isSel = el.getAttribute('data-st')===st;
+    el.classList.toggle('selected', isSel);
+    el.classList.toggle('planned-sel', isSel && st==='planned');
+    el.classList.toggle('purchased-sel', isSel && st==='purchased');
+  });
+}
+window.selectStatus = selectStatus;
+
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+window.closeSheet = closeSheet;
+
+async function submitItem(){
+  const name = document.getElementById('fName').value.trim();
+  const price = parseFloat(document.getElementById('fPrice').value);
+  const qty = parseFloat(document.getElementById('fQty').value) || 1;
+  const addedBy = document.getElementById('fAddedBy').value.trim();
+
+  if(!name || !price || price <= 0){
+    showToast(settings.language==='am' ? 'እባክዎ ስምና ዋጋ ያስገቡ' : 'Please enter a name and price');
+    return;
+  }
+  if(addedBy && addedBy !== settings.name){
+    settings.name = addedBy;
+    saveSettingsLocal();
+  }
+
+  try{
+    await addDoc(itemsCol, {
+      name, category: modalCategory, price, qty,
+      status: modalStatus, addedBy: addedBy || settings.name || '',
+      createdAt: Date.now()
+    });
+    closeSheet();
+    showToast(t('addedToast'));
+  }catch(e){
+    console.error(e);
+    showToast(settings.language==='am' ? 'ማከል አልተሳካም' : 'Add failed');
+  }
+}
+window.submitItem = submitItem;
+
+/* ================= Init ================= */
+loadSettings();
+document.body.className = settings.language==='am' ? 'lang-am' : '';
+
+if(CONFIG_MISSING){
+  render();
+} else {
+  const q = query(itemsCol, orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snapshot)=>{
+    items = snapshot.docs.map(d=> ({id: d.id, ...d.data()}));
+    render();
+  }, (err)=>{
+    console.error(err);
+    showToast(settings.language==='am' ? 'ከመረጃ ቋት ጋር መገናኘት አልተቻለም' : 'Could not connect to database');
+  });
+}
+</script>
+</body>
+</html>
